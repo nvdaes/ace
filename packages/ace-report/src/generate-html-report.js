@@ -109,6 +109,21 @@ module.exports = function generateHtmlReport(reportData) {
 
 };
 
+// summarize the violation ruleset and impact data
+function collectViolationStats(flatListOfViolations) {
+  var rulesetTags = ['wcag2a', 'wcag2aa', 'EPUB', 'best-practice'];
+
+  var summaryData = {
+    'wcag2a': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+    'wcag2aa': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+    'EPUB': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+    'best-practice': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+    'other': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+    'total': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0}
+  };
+
+};
+
 // collect the valid values for each filter type
 function createViolationFilters(violations) {
   var filters = {
