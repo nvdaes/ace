@@ -10,7 +10,7 @@ module.exports = function generateHtmlReport(reportData) {
 
   return new Promise((resolve, reject) => {
     var flatListOfViolations = createFlatListOfViolations(reportData.assertions);
-    var violationStats = collectViolationStats(flatListOfViolations);
+    var violationStats = reportData.violationSummary;
     var violationFilters = createViolationFilters(flatListOfViolations);
     var rulesetTagLabels = {
       'wcag2a': 'WCAG 2.0 A',
@@ -108,45 +108,6 @@ module.exports = function generateHtmlReport(reportData) {
   });
 
 };
-
-// summarize the violation ruleset and impact data
-function collectViolationStats(flatListOfViolations) {
-  var rulesetTags = ['wcag2a', 'wcag2aa', 'EPUB', 'best-practice'];
-
-  var summaryData = {
-    'wcag2a': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
-    'wcag2aa': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
-    'EPUB': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
-    'best-practice': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
-    'other': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
-    'total': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0}
-  };
-
-  flatListOfViolations.forEach(function(item) {
-    var found = false;
-    item.rulesetTags.forEach(function(tag) {
-      if (rulesetTags.indexOf(tag) > -1) {
-        summaryData[tag][item.impact] += 1;
-        summaryData[tag]['total'] += 1;
-        found = true;
-      }
-    });
-    if (!found) {
-      summaryData['other'][item.impact] += 1;
-      summaryData['other']['total'] += 1;
-    }
-  });
-
-  Object.keys(summaryData['total']).forEach(function(key) {
-    summaryData['total'][key] += summaryData['wcag2a'][key]
-      + summaryData['wcag2aa'][key]
-      + summaryData['EPUB'][key]
-      + summaryData['best-practice'][key]
-      + summaryData['other'][key];
-  });
-
-  return summaryData;
-}
 
 // collect the valid values for each filter type
 function createViolationFilters(violations) {

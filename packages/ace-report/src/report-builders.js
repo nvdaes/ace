@@ -19,6 +19,7 @@ const ACE_DESCRIPTION = {
   'doap:created': '2017-07-01',
   'doap:release': { 'doap:revision': pkg.version },
 };
+const RULESET_TAGS = ['wcag2a', 'wcag2aa', 'EPUB', 'best-practice'];
 
 function calculateResult(assertions) {
   let outcome = 'pass';
@@ -105,6 +106,14 @@ class ReportBuilder {
       outlines: {},
       data: {},
       properties: {},
+      violationSummary: {
+        'wcag2a': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+        'wcag2aa': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+        'EPUB': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+        'best-practice': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+        'other': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0},
+        'total': {'critical': 0, 'serious': 0, 'moderate': 0, 'minor': 0, 'total': 0}
+      }
     };
   }
   build() {
@@ -128,6 +137,7 @@ class ReportBuilder {
   withAssertions(assertions) {
     if (!assertions) return this;
     withAssertions(this._json, assertions);
+    this.addToViolationSummary(assertions);
     return this;
   }
   withData(data) {
@@ -172,6 +182,44 @@ class ReportBuilder {
     }
     withTestSubject(this._json, url_, title, identifier, metadata, links);
     return this;
+  }
+  addToViolationSummary(assertions) {
+    var asserts = assertions;
+    // an assertion can be an array of tests or a container of arrays of tests
+    if (!Array.isArray(assertions)) {
+      if (assertions.hasOwnProperty('assertions')) {
+        asserts = assertions['assertions'];
+      }
+      else {
+        return;
+      }
+    }
+    if (asserts.length == 0) return;
+
+    var violationSummary = this._json['violationSummary'];
+    asserts.forEach(function(assertion) {
+      var found = false;
+      assertion['earl:test'].rulesetTags.forEach(function(tag) {
+        let impact = assertion['earl:test']['earl:impact'];
+        if (RULESET_TAGS.indexOf(tag) > -1) {
+          violationSummary[tag][impact] += 1;
+          violationSummary[tag]['total'] += 1;
+          found = true;
+        }
+      });
+      if (!found) {
+        violationSummary['other'][impact] += 1;
+        violationSummary['other']['total'] += 1;
+      }
+    });
+
+    Object.keys(violationSummary['total']).forEach(function(key) {
+    violationSummary['total'][key] = violationSummary['wcag2a'][key]
+      + violationSummary['wcag2aa'][key]
+      + violationSummary['EPUB'][key]
+      + violationSummary['best-practice'][key]
+      + violationSummary['other'][key];
+    });
   }
 }
 
